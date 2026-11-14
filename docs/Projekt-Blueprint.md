@@ -33,7 +33,7 @@ docs/                        # u. a. dieser Blueprint
 - Die Logik steckt komplett in `Directory.Build.props` und wird über `-p:QnChannel=release|nightly|local -p:QnBuildNumber=<n>` gesteuert. Ohne Parameter entsteht automatisch `local-<datum>`.
 - `Version` (numerisch, z. B. `1.0.42`) und `InformationalVersion` (der Anzeige-String) sind getrennt. Windows braucht eine numerische Version, angezeigt wird der String.
 - `IncludeSourceRevisionInInformationalVersion=false`, sonst hängt .NET `+<commit-hash>` an.
-- Die Build-Nummer ist `github.run_number`, sie zählt automatisch hoch.
+- Die Build-Nummer ist `github.run_number`, sie zählt automatisch hoch, und zwar über alle Branches gemeinsam. In QuickNote war der erste Release deshalb `1.0.2`, der erste Nightly `nightly-1`.
 - Die App liest ihre Version über `AssemblyInformationalVersionAttribute` (siehe `VersionInfo.cs`) und zeigt sie an. Das Setup macht es genauso.
 
 ## 3. Git-Regeln (gelten für alle Projekte)
@@ -102,9 +102,9 @@ docs/                        # u. a. dieser Blueprint
   2. `test`
   3. `windows` und `macos` (Matrix arm64/x64)
   4. `publish`: `gh release create`, auf `main` als Release, auf `dev` als Pre-Release
-- `permissions: contents: write` ist für Releases nötig.
+- `permissions: contents: write` im Workflow ist für Releases nötig. Weil der Workflow das Recht selbst anfordert, spielt die Repo-Einstellung „Workflow permissions“ keine Rolle.
 - Lokal unter Windows: `powershell -ExecutionPolicy Bypass -File build/Build-Windows.ps1`.
-- Bei neuen Repos prüfen, ob GitHub Actions aktiviert ist. Der erste Push hat hier keinen Lauf ausgelöst.
+- Bei neuen Repos startet Actions nicht unbedingt von selbst, siehe „Stolperfalle GitHub Actions“.
 
 ## 9. Verschlüsselung (wiederverwendbar)
 
@@ -126,14 +126,34 @@ docs/                        # u. a. dieser Blueprint
 
 `dotnet new gitignore` ignoriert `*.app` (macOS-Bundles). Das trifft auch Projektordner wie `src/<Name>.App/`, und das komplette UI-Projekt fehlt dann im Repo, ohne dass es lokal auffällt. Abhilfe: direkt darunter `!src/<Name>.App/` eintragen, oder das UI-Projekt anders benennen (z. B. `<Name>.Desktop`).
 
+## Stolperfalle GitHub Actions bei neuen Repos
+
+**Was bei QuickNote passiert ist:** Der Workflow war auf GitHub registriert und „active“, trotzdem hat kein Push einen Lauf ausgelöst. GitHub hat für die Commits nicht einmal eine Check-Suite angelegt. Erst nachdem Actions unter Settings → Actions → General freigegeben war, liefen neue Pushes los. Pushes von vorher holt GitHub nicht nach.
+
+**Warum sich neue Repos unterschiedlich verhalten:**
+- **Organisation oder persönliches Konto:** Eine Organisation legt per Richtlinie fest, ob neue Repos Actions bekommen, etwa nur für ausgewählte Repos.
+- **Forks:** Dort sind Workflows zunächst abgeschaltet.
+- **Anlegezeitpunkt:** GitHub ändert Standards nur für neue Repos. Seit 2023 ist der Workflow-Token in neuen Repos standardmäßig nur lesend.
+- **Privat oder öffentlich:** Private Repos verbrauchen ein Minutenkontingent, macOS-Runner zählen zehnfach. Öffentliche Repos sind kostenlos.
+
+**So bleibt es reproduzierbar:**
+1. Das Repo auf GitHub **leer** anlegen, ohne README, `.gitignore` und Lizenz. Danach den lokalen Stand pushen.
+2. Alles, was sich in Dateien festlegen lässt, gehört ins Repo: `permissions:` im Workflow statt der Repo-Einstellung, eine eigene `.gitignore`.
+3. Direkt nach dem ersten Push den Actions-Tab öffnen. Steht dort nach einer Minute kein Lauf, unter Settings → Actions → General „Allow all actions and reusable workflows“ wählen und speichern.
+4. Danach neu anstoßen: `git commit --allow-empty -m "Trigger CI"`, dann auf `dev` und `main` pushen. „Run workflow“ (`workflow_dispatch`) baut nur als `local` und veröffentlicht nichts.
+5. **Prüfen ohne Login** (bei öffentlichen Repos):
+   - `https://api.github.com/repos/<owner>/<repo>/actions/runs` zeigt die Läufe (`total_count`).
+   - `.../commits/<sha>/check-suites` zeigt die Check-Suites eines Commits.
+   - Gibt es trotz passendem Trigger weder Lauf noch Check-Suite, ist Actions abgeschaltet. Ein Fehler in der Workflow-Datei würde dagegen als fehlgeschlagener Lauf auftauchen.
+
 ## 11. Checkliste für ein neues Projekt
 
 1. Skelett aus Abschnitt 1 anlegen, `VERSION` und `Directory.Build.props` kopieren und Präfix bzw. Namen anpassen.
-2. `git config user.name/user.email` setzen, Branches `main` und `dev` anlegen.
+2. `git config user.name/user.email` setzen, Branches `main` und `dev` anlegen. Das GitHub-Repo leer anlegen.
 3. Logo-SVGs in drei Stufen anlegen, `IconGen` laufen lassen.
 4. Core: Modelle, statische Business-Klassen, `AccessGuard`, Tests.
 5. App: Styles, MainWindow, ViewModels, Dialog-Delegates, Shortcuts, Testprofil-Variable.
 6. Setup: Installer-Projekt mit Payload, Registry-Einträge, Uninstall.
-7. Build-Skripte und Workflow übernehmen, Namen anpassen.
+7. Build-Skripte und Workflow übernehmen, Namen anpassen. Nach dem ersten Push prüfen, ob im Actions-Tab ein Lauf erscheint.
 8. Veröffentlichten Build starten, Screenshots prüfen, Icons prüfen.
 9. README mit Versionierung, Bauen und Tastenkürzeln.
