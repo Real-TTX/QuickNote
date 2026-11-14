@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Minimal detail: 16-24px (favicon, tray). Few, bold shapes only. -->
+  <rect x="0" y="0" width="512" height="512" rx="120" fill="#DB4C3F"/>
+  <path d="M120 64h200l112 112v248a24 24 0 0 1-24 24H120a24 24 0 0 1-24-24V88a24 24 0 0 1 24-24z" fill="#FFFFFF"/>
+  <path d="M320 64v112h112z" fill="#F2A894"/>
+  <path d="M300 220l-76 120h60l-24 100 112-150h-64z" fill="#DB4C3F"/>
+</svg>

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Medium detail: 32-64px (taskbar, dock, title bar) -->
+  <rect x="16" y="16" width="480" height="480" rx="112" fill="#DB4C3F"/>
+  <path d="M132 96h176l92 92v212a28 28 0 0 1-28 28H132a28 28 0 0 1-28-28V124a28 28 0 0 1 28-28z" fill="#FFF8F4"/>
+  <path d="M308 96v68a24 24 0 0 0 24 24h68z" fill="#F6B9A6"/>
+  <g stroke="#E6C4B8" stroke-width="22" stroke-linecap="round">
+    <path d="M152 262h104"/>
+    <path d="M152 322h156"/>
+  </g>
+  <path d="M356 292l-48 80h38l-16 60 66-90h-40z" fill="#DB4C3F"/>
+</svg>

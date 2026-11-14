@@ -1,0 +1,39 @@
+<Project>
+  <!--
+    Versioning (see README):
+      Release (main):  <major>.<minor>.<build>-<builddate>   e.g. 1.0.42-20261114
+      Nightly (dev):   nightly-<build>-<builddate>           e.g. nightly-42-20261114
+      Local:           local-<builddate>                     e.g. local-20261114
+    CI passes -p:QnChannel=release|nightly and -p:QnBuildNumber=<run number>.
+  -->
+  <PropertyGroup>
+    <QnChannel Condition="'$(QnChannel)' == ''">local</QnChannel>
+    <QnBuildNumber Condition="'$(QnBuildNumber)' == ''">0</QnBuildNumber>
+    <QnBuildDate Condition="'$(QnBuildDate)' == ''">$([System.DateTime]::UtcNow.ToString('yyyyMMdd'))</QnBuildDate>
+    <QnMajorMinor>$([System.IO.File]::ReadAllText('$(MSBuildThisFileDirectory)VERSION').Trim())</QnMajorMinor>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(QnChannel)' == 'release'">
+    <Version>$(QnMajorMinor).$(QnBuildNumber)</Version>
+    <InformationalVersion>$(QnMajorMinor).$(QnBuildNumber)-$(QnBuildDate)</InformationalVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(QnChannel)' == 'nightly'">
+    <Version>0.0.$(QnBuildNumber)</Version>
+    <InformationalVersion>nightly-$(QnBuildNumber)-$(QnBuildDate)</InformationalVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(QnChannel)' == 'local'">
+    <Version>0.0.0</Version>
+    <InformationalVersion>local-$(QnBuildDate)</InformationalVersion>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Authors>Matthias</Authors>
+    <Product>QuickNote</Product>
+    <Copyright>Copyright (c) Matthias</Copyright>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+  </PropertyGroup>
+</Project>
