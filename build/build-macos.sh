@@ -30,6 +30,7 @@ dotnet publish "$ROOT/src/QuickNote.App" -c Release -r "$RUNTIME" --self-contain
 
 cp -R "$PUBLISH_DIR/." "$APP_DIR/Contents/MacOS/"
 cp "$ROOT/assets/icons/quicknote.icns" "$APP_DIR/Contents/Resources/QuickNote.icns"
+cp "$ROOT/assets/icons/quicknote-document.icns" "$APP_DIR/Contents/Resources/QuickNoteDocument.icns"
 chmod +x "$APP_DIR/Contents/MacOS/QuickNote"
 
 cat > "$APP_DIR/Contents/Info.plist" <<PLIST
@@ -52,11 +53,14 @@ cat > "$APP_DIR/Contents/Info.plist" <<PLIST
     <dict>
       <key>CFBundleTypeName</key><string>QuickNote verschlüsselte Notiz</string>
       <key>CFBundleTypeExtensions</key><array><string>txts</string></array>
+      <key>CFBundleTypeIconFile</key><string>QuickNoteDocument</string>
+      <key>LSHandlerRank</key><string>Owner</string>
       <key>CFBundleTypeRole</key><string>Editor</string>
     </dict>
     <dict>
-      <key>CFBundleTypeName</key><string>Markdown</string>
-      <key>CFBundleTypeExtensions</key><array><string>md</string></array>
+      <key>CFBundleTypeName</key><string>Markdown / Text</string>
+      <key>CFBundleTypeExtensions</key><array><string>md</string><string>txt</string></array>
+      <key>LSHandlerRank</key><string>Alternate</string>
       <key>CFBundleTypeRole</key><string>Editor</string>
     </dict>
   </array>

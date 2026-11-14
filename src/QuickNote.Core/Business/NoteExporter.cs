@@ -15,26 +15,19 @@ public static class NoteExporter
         _ => ".txt",
     };
 
-    public static string Render(Note note, ExportFormat format)
+    /// <summary>Exports the content of a note. The source path is checked so locked notes cannot be exported.</summary>
+    public static void ExportToFile(string sourcePath, string title, string content, ExportFormat format, string targetPath)
     {
-        AccessGuard.EnsureCanExport(note);
-        var markdown = BuildMarkdown(note);
-        return format switch
-        {
-            ExportFormat.Markdown => markdown,
-            ExportFormat.Html => BuildHtml(note.Title, markdown),
-            _ => Markdown.ToPlainText(markdown, Pipeline),
-        };
+        AccessGuard.EnsureCanExport(sourcePath);
+        File.WriteAllText(targetPath, Render(title, content, format), new UTF8Encoding(false));
     }
 
-    public static void ExportToFile(Note note, ExportFormat format, string targetPath)
-        => File.WriteAllText(targetPath, Render(note, format), new UTF8Encoding(false));
-
-    private static string BuildMarkdown(Note note)
+    public static string Render(string title, string content, ExportFormat format) => format switch
     {
-        var hasHeading = note.Body.TrimStart().StartsWith('#');
-        return hasHeading || string.IsNullOrWhiteSpace(note.Title) ? note.Body : $"# {note.Title}\n\n{note.Body}";
-    }
+        ExportFormat.Markdown => content,
+        ExportFormat.Html => BuildHtml(title, content),
+        _ => Markdown.ToPlainText(content, Pipeline),
+    };
 
     private static string BuildHtml(string title, string markdown)
     {

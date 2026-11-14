@@ -13,3 +13,6 @@ public enum ExportFormat
     Html,
     PlainText,
 }
+
+/// <summary>Key material of an unlocked encrypted note. Only the derived key is kept, never the password.</summary>
+public sealed record EncryptionKey(byte[] Salt, byte[] Key, int Iterations);

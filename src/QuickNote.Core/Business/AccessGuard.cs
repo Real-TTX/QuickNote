@@ -5,28 +5,45 @@ namespace QuickNote.Core.Business;
 /// <summary>Permission checks. Always executed in the business layer, never only in the UI.</summary>
 public static class AccessGuard
 {
-    public static void EnsureCanRead(Note note)
+    /// <summary>QuickNote only reads, writes, renames and deletes its own note types.</summary>
+    public static void EnsureIsNoteFile(string path)
     {
-        if (note.IsEncrypted && !note.IsUnlocked)
+        if (!NoteLibrary.IsSupportedFile(path))
         {
-            throw new UnauthorizedAccessException("Die Notiz ist verschlüsselt und noch nicht entsperrt.");
+            throw new UnauthorizedAccessException($"QuickNote bearbeitet nur .md, .txt und .txts: {Path.GetFileName(path)}");
         }
     }
 
-    public static void EnsureCanModify(Note note)
+    public static void EnsureCanRead(string path)
     {
-        EnsureCanRead(note);
-
-        if (note.IsEncrypted && string.IsNullOrEmpty(note.Password))
+        EnsureIsNoteFile(path);
+        if (!File.Exists(path))
         {
-            throw new UnauthorizedAccessException("Für die verschlüsselte Notiz liegt kein Kennwort vor.");
-        }
-
-        if (File.Exists(note.FilePath) && File.GetAttributes(note.FilePath).HasFlag(FileAttributes.ReadOnly))
-        {
-            throw new UnauthorizedAccessException($"Die Datei ist schreibgeschützt: {note.FilePath}");
+            throw new FileNotFoundException($"Die Datei wurde nicht gefunden: {path}", path);
         }
     }
 
-    public static void EnsureCanExport(Note note) => EnsureCanRead(note);
+    public static void EnsureCanWrite(string path)
+    {
+        EnsureIsNoteFile(path);
+        if (File.Exists(path) && File.GetAttributes(path).HasFlag(FileAttributes.ReadOnly))
+        {
+            throw new UnauthorizedAccessException($"Die Datei ist schreibgeschützt: {Path.GetFileName(path)}");
+        }
+    }
+
+    /// <summary>Encrypted notes may only be read, written, exported or decrypted while they are unlocked.</summary>
+    public static EncryptionKey EnsureUnlocked(string path)
+    {
+        return EncryptionSession.TryGetKey(path)
+            ?? throw new UnauthorizedAccessException("Die Notiz ist verschlüsselt und nicht entsperrt.");
+    }
+
+    public static void EnsureCanExport(string path)
+    {
+        if (NoteLibrary.GetKind(path) == NoteFileKind.Encrypted)
+        {
+            EnsureUnlocked(path);
+        }
+    }
 }
