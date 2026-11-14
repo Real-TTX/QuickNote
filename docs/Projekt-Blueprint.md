@@ -120,6 +120,11 @@ docs/                        # u. a. dieser Blueprint
 - Die **veröffentlichte** Exe starten, nicht nur `dotnet run`.
 - UI-Check ohne Klicken: Die App mit Testprofil und Datei-Argumenten starten und das Fenster per `PrintWindow` fotografieren (`build/Capture-Window.ps1`). Das klappt auch, wenn das Fenster verdeckt ist.
 - Prüfen, ob das Icon wirklich in der Exe steckt: `[System.Drawing.Icon]::ExtractAssociatedIcon(...)`.
+- **Vor jedem Push einen frischen Klon bauen** (`git clone -b dev . <temp>` und dann `dotnet build`). Nur so fällt auf, wenn Dateien gar nicht im Repo sind.
+
+## Stolperfalle `.gitignore`
+
+`dotnet new gitignore` ignoriert `*.app` (macOS-Bundles). Das trifft auch Projektordner wie `src/<Name>.App/`, und das komplette UI-Projekt fehlt dann im Repo, ohne dass es lokal auffällt. Abhilfe: direkt darunter `!src/<Name>.App/` eintragen, oder das UI-Projekt anders benennen (z. B. `<Name>.Desktop`).
 
 ## 11. Checkliste für ein neues Projekt
 
