@@ -486,3 +486,6 @@ $RECYCLE.BIN/
 *.swp
 artifacts/
 .vs/
+
+# Setup downloaded from a GitHub release into the repo root for testing
+/QuickNote-Setup-*.exe
